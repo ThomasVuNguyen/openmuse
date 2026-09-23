@@ -1,4 +1,5 @@
 import "./config.ts";
+import { createOpenAI } from "@ai-sdk/openai";
 import { HttpAgent } from "@ag-ui/client";
 import {
   type AgentsFactory,
@@ -10,6 +11,19 @@ import type { Auth } from "./auth.ts";
 import type { Config } from "./config.ts";
 import { ConversationAgent } from "./engine/conversation.ts";
 import type { AgentService } from "./engine/service.ts";
+
+export function resolveAgentModel(modelSpec: string | undefined): any {
+  if (!modelSpec) return "openai/unconfigured";
+  if (modelSpec.startsWith("openai/")) {
+    const modelName = modelSpec.slice(7);
+    const openai = createOpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_BASE_URL,
+    });
+    return openai.chat(modelName);
+  }
+  return modelSpec;
+}
 
 export function agentConfigured(config: Config) {
   return (

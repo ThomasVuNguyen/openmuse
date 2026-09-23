@@ -10,6 +10,7 @@ import {
   goalInputSchema,
   monitorInputSchema,
 } from "../../../../packages/domain/src/agent.ts";
+import { resolveAgentModel } from "../agent.ts";
 import { computerInstructions, computerTools } from "../computer-tools.ts";
 import type { Config } from "../config.ts";
 import type { AgentService } from "./service.ts";
@@ -214,7 +215,7 @@ export class ConversationAgent extends AbstractAgent {
       }),
     ];
     const agent = new BuiltInAgent({
-      model: this.config.model ?? "openai/unconfigured",
+      model: resolveAgentModel(this.config.model),
       maxSteps: 6,
       maxRetries: 0,
       tools,
