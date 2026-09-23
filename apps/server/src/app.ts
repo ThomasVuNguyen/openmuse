@@ -339,11 +339,12 @@ export async function createApp(
     return new Response(body, { status: response.status, headers: response.headers });
   });
   // Serve static web UI if the public directory exists (production build)
-  const publicDir = new URL("../../public", import.meta.url).pathname;
+  const { join } = await import("node:path");
+  const publicDir = join(process.cwd(), "public");
   const { existsSync, readFileSync } = await import("node:fs");
   if (existsSync(publicDir)) {
     const { serveStatic } = await import("@hono/node-server/serve-static");
-    app.use("/*", serveStatic({ root: publicDir, rewriteRequestPath: (p) => p }));
+    app.use("/*", serveStatic({ root: "./public" }));
     // SPA fallback: serve index.html for non-API routes
     app.get("*", (c) => {
       const html = readFileSync(`${publicDir}/index.html`, "utf-8");
