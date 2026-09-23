@@ -15,7 +15,7 @@ services:
       ALLOWED_ORIGINS: https://muse.beenex.cloud
       WORKSPACE_MODE: sample
       AGENT_BACKEND: model
-      MODEL: ${MODEL:-openai/@cf/meta/llama-3.3-70b-instruct-fp8-fast}
+      MODEL: ${MODEL:-openai/@cf/deepseek-ai/deepseek-v4-pro-0813}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-placeholder}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.cloudflare.com/client/v4/accounts/placeholder/ai/v1}
       BROWSER_WORKER_URL: http://browser-worker:8790
