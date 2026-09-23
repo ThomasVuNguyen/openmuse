@@ -3,12 +3,18 @@ RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/server apps/server
-COPY apps/mobile/package.json apps/mobile/package.json
+COPY apps/mobile apps/mobile
 COPY apps/worker/package.json apps/worker/package.json
 COPY packages packages
 COPY tsconfig.json tsconfig.build.json biome.json ./
 RUN pnpm install --frozen-lockfile
 RUN pnpm build:server
+
+# Build the Expo web UI
+WORKDIR /app/apps/mobile
+ENV EXPO_PUBLIC_API_URL=""
+RUN npx --no expo export --platform web --output-dir /app/public
+WORKDIR /app
 
 FROM node:22-slim
 RUN apt-get update \
@@ -19,6 +25,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./
 COPY --from=build /app/packages ./packages
+COPY --from=build /app/public ./public
 RUN mkdir -p .openmuse && chown -R 1000:1000 /app
 EXPOSE 8787
 HEALTHCHECK --interval=15s --timeout=5s --retries=3 \

@@ -338,8 +338,22 @@ export async function createApp(
     );
     return new Response(body, { status: response.status, headers: response.headers });
   });
-  app.get("/", (c) =>
-    c.json({ name: "OpenMuse", app: "http://localhost:8081", health: "/api/health" }),
-  );
+  // Serve static web UI if the public directory exists (production build)
+  const publicDir = new URL("../../public", import.meta.url).pathname;
+  const { existsSync, readFileSync } = await import("node:fs");
+  if (existsSync(publicDir)) {
+    const { serveStatic } = await import("@hono/node-server/serve-static");
+    app.use("/*", serveStatic({ root: publicDir, rewriteRequestPath: (p) => p }));
+    // SPA fallback: serve index.html for non-API routes
+    app.get("*", (c) => {
+      const html = readFileSync(`${publicDir}/index.html`, "utf-8");
+      c.header("Content-Type", "text/html; charset=utf-8");
+      return c.body(html);
+    });
+  } else {
+    app.get("/", (c) =>
+      c.json({ name: "OpenMuse", app: "http://localhost:8081", health: "/api/health" }),
+    );
+  }
   return { app, auth, files, actions, workspace, agent, computer };
 }

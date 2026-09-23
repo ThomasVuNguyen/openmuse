@@ -2,7 +2,9 @@ import { Platform } from "react-native";
 
 export const API_URL = (
   process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787")
+  (Platform.OS === "web"
+    ? (typeof window !== "undefined" ? window.location.origin : "http://localhost:8787")
+    : Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787")
 ).replace(/\/$/, "");
 
 export class MuseApi {
