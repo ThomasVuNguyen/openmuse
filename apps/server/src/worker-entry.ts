@@ -1,3 +1,4 @@
+import "./cloudflare-shim.ts";
 import { createApp } from "./app.ts";
 import { readConfig } from "./config.ts";
 import { createStore } from "./db.ts";
