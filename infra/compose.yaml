@@ -1,5 +1,41 @@
 name: openmuse
 services:
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      browser-worker:
+        condition: service_healthy
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8787
+      PUBLIC_API_URL: https://muse.beenex.cloud
+      ALLOWED_ORIGINS: https://muse.beenex.cloud
+      WORKSPACE_MODE: sample
+      AGENT_BACKEND: model
+      MODEL: ${MODEL:-openai/@cf/meta/llama-3.3-70b-instruct-fp8-fast}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-placeholder}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.cloudflare.com/client/v4/accounts/placeholder/ai/v1}
+      BROWSER_WORKER_URL: http://browser-worker:8790
+      WORKER_TOKEN: ${WORKER_TOKEN:?Set WORKER_TOKEN to a random secret of at least 32 characters}
+      COMPUTER_ENABLED: "true"
+      COMPUTER_IMAGE: openmuse-computer:local
+      DATA_DIR: /app/.openmuse
+      TASK_WORKER_ENABLED: "true"
+    ports:
+      - "8787:8787"
+    volumes:
+      - openmuse-data:/app/.openmuse
+      - /var/run/docker.sock:/var/run/docker.sock
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
   browser-worker:
     build:
       context: ../apps/worker
@@ -8,8 +44,6 @@ services:
     environment:
       WORKER_HOST: 0.0.0.0
       WORKER_TOKEN: ${WORKER_TOKEN:?Set WORKER_TOKEN to a random secret of at least 32 characters}
-    ports:
-      - "127.0.0.1:8790:8790"
     volumes:
       - browser-profiles:/data
     tmpfs:
@@ -27,5 +61,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
+
 volumes:
+  openmuse-data:
   browser-profiles:
